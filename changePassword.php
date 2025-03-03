@@ -99,7 +99,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
     </div>
     <footer>
-        PHP Training @10/2023
+        PHP Training @3/2025
     </footer>
 </body>
 
