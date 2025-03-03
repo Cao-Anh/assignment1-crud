@@ -96,7 +96,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
     <footer>
         PHP Training @3/2025
-        PHP Training @10/2024
     </footer>
 </body>
 
