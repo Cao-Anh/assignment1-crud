@@ -1,6 +1,6 @@
 <?php
 session_start();
-require 'config.php'; // Ensure this file connects to your database ($pdo)
+require 'config.php'; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
@@ -8,7 +8,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $new_password = trim($_POST['new_password']);
     $confirm_password = trim($_POST['confirm_password']);
 
-    // Check if username exists in the database
     $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
     $stmt->execute(['username' => $username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -19,17 +18,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    // Verify the current password
     if (!password_verify($current_password, $user['password'])) {
         $_SESSION['error'] = "Mật khẩu hiện tại không đúng!";
         header("Location: changePassword.php");
         exit();
     }
 
-    // Hash the new password before storing it
     $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
-    // Update the new password in the database
     $updateStmt = $pdo->prepare("UPDATE users SET password = :password WHERE username = :username");
     $updateStmt->execute([
         'password' => $hashed_password,
