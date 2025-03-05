@@ -5,13 +5,16 @@ require 'functions.php';
 
 rememberToken();
 isAuthenticated();
+
+
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 // Check and fetch user id
 if (isset($_GET['id'])) {
     $encoded_id = $_GET['id'];
-
-
     $user_id = base64_decode($encoded_id);
-
 
     if (!is_numeric($user_id)) {
         die("Invalid request1!");
@@ -34,13 +37,20 @@ if (!isAuthorized($user)) {
     header("Location: dashboard.php?error=Bạn không có quyền chỉnh sửa người dùng này!");
     exit;
 }
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // CSRF token validation
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed!");
+    }
+
+    // Generate a new CSRF token after validation
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+
     $username = trim($_POST['username']);
     $password = $_POST['password'];
     $email = trim($_POST['email']);
     $description = trim($_POST['description']);
-
-
 
     // Validate unique username
     $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username");
@@ -50,8 +60,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-
-
     // Validate unique email
     $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email");
     $stmt->execute([':email' => $email]);
@@ -59,6 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: edit.php?id=" . $encoded_id . "&errorEmail=Email đã tồn tại!");
         exit;
     }
+
     // Verify password
     if (!password_verify($password, $user['password'])) {
         header("Location: edit.php?id=" . $encoded_id . "&errorPassword=Mật khẩu hiện tại không đúng!");
@@ -66,7 +75,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Update user info
-
     $stmt = $pdo->prepare("UPDATE users SET username = :username, email = :email, description = :description WHERE id = :id");
     $stmt->execute([
         ':username' => $username,
@@ -113,7 +121,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php if (!empty($_GET['errorEmail'])) echo "<p class='error'>" . htmlspecialchars($_GET['errorEmail']) . "</p>"; ?>
         <?php if (!empty($_GET['errorPassword'])) echo "<p class='error'>" . htmlspecialchars($_GET['errorPassword']) . "</p>"; ?>
 
-        <form method="POST" action="edit.php?id=<?= $encoded_id ?>" >
+        <form method="POST" action="edit.php?id=<?= $encoded_id ?>">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+
             <label>Username</label>
             <input type="text" name="username" id="username" value="<?= htmlspecialchars($user['username']) ?>" required>
             <p class="error" id="usernameError"></p>
@@ -132,12 +142,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <label>Mô tả (tùy chọn)</label>
             <textarea name="description" id="description"><?= htmlspecialchars($user['description'] ?? '') ?></textarea>
-            <!-- <a href="#" id="changePasswordLink">Đổi mật khẩu</a> -->
+
             <div class="button-container" style="margin-top: 10px;">
                 <button onclick="window.history.back();">Quay lại</button>
                 <button type="submit">Cập nhật</button>
             </div>
         </form>
+
 
 
 

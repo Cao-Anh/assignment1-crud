@@ -73,7 +73,12 @@ if (isset($_GET['error'])) {
                                 <a href="edit.php?id=<?= $encoded_id ?>">Sửa</a>
                             <?php endif; ?>
                             <?php if (isAuthorized($user)): ?>
-                                <a href="delete.php?id=<?= $encoded_id ?>">Xóa</a>
+                                <form action="delete.php" method="POST" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
+                                    <input type="hidden" name="id" value="<?= $encoded_id; ?>">
+                                    <button style="all: unset;color: blue;text-decoration: underline;cursor: pointer;display: inline;"
+                                     type="submit" onclick="return confirm('Bạn có chắc chắn muốn xóa?');">Xóa</button>
+                                </form>
                             <?php endif; ?>
                         </td>
                     </tr>
