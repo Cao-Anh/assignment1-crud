@@ -41,7 +41,7 @@ if (!isAuthorized($user)) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // CSRF token validation
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-        die("CSRF token validation failed!");
+        die("CSRF token không hợp lệ!");
     }
 
     // Generate a new CSRF token after validation
