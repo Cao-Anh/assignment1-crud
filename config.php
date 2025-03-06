@@ -2,10 +2,11 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$host = 'localhost';
+
+$host = 'db';  // Use 'db' instead of 'localhost' (Docker service name)
 $db   = 'user_management';
 $user = 'root';
-$pass = '';
+$pass = '';  // No password, as set in docker-compose.yml
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
