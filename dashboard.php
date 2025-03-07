@@ -65,7 +65,7 @@ if (isset($_GET['error'])) {
                     <tr>
                         <td><?= htmlspecialchars($user['username']) ?></td>
                         <td><?= htmlspecialchars($user['email']) ?></td>
-                        <td><?= htmlspecialchars($user['description']) ?></td>
+                        <td><?= htmlspecialchars($user['description']??"") ?></td>
                         <td>
                             <?php $encoded_id = base64_encode($user['id']); ?>
                             <a href="show.php?id=<?= $encoded_id ?>">Xem</a>

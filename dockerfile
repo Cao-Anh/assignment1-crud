@@ -1,6 +1,13 @@
 # Use official PHP 8.2 with Apache
 FROM php:8.2-apache
 
+# Install Xdebug
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
+
+# Copy the custom Xdebug configuration
+COPY xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+
 # Install necessary PHP extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
