@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['token' => $token, 'id' => $user['id']]);
         }
 
-        header("Location: dashboard.php");
+        header("Location: controller/UserListController.php");
         exit();
     } else {
         $error="Tài khoản hoặc mật khẩu không đúng, vui lòng đăng nhập lại.";
