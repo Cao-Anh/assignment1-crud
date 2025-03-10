@@ -4,6 +4,7 @@
 // session_start();
 require 'config.php';
 require 'functions.php';
+require_once 'model/UserModel.php';
 rememberToken();
 if (isset($_SESSION['user'])) {
     header("Location: dashboard.php");
@@ -28,9 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-    $stmt->execute([$username]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $userModel = new UserModel($pdo);
+    $user = $userModel->getUserByUsername($username);
     if ($user && password_verify($password, $user['password'])) {
 
         $_SESSION['user'] = $user;
@@ -38,14 +39,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $token = bin2hex(random_bytes(32));
             setcookie('remember_token', $token, time() + (86400 * 30), "/");
 
-            $stmt = $pdo->prepare("UPDATE users SET remember_token = :token WHERE id = :id");
-            $stmt->execute(['token' => $token, 'id' => $user['id']]);
+            $userModel->setRememberToken($token, $user);
         }
 
         header("Location: dashboard.php");
         exit();
     } else {
-        $error="Tài khoản hoặc mật khẩu không đúng, vui lòng đăng nhập lại.";
+        $error = "Tài khoản hoặc mật khẩu không đúng, vui lòng đăng nhập lại.";
     }
 }
 if (isset($_GET['error'])) {

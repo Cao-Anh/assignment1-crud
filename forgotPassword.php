@@ -4,17 +4,22 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
+require_once 'model/UserModel.php';
 
 session_start();
 require 'config.php';
+
+if (isset($_SESSION['error'])) {
+    echo "<script>alert('" . htmlspecialchars($_SESSION['error']) . "');</script>";
+    unset($_SESSION['error']); 
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
 
     // Check if email exists
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
-    $stmt->execute(['email' => $email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $userModel = new UserModel($pdo);
+    $user= $userModel->getUserByEmail($email);
 
     if ($user) {
         // Generate temporary password (8 characters)
@@ -53,7 +58,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     } else {
         $_SESSION['error'] = "Không tìm thấy địa chỉ email!";
+        header("Location: forgotPassword.php");
+        exit();
     }
+    
 
     header("Location: index.php");
     exit();

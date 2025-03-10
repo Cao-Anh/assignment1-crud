@@ -1,6 +1,8 @@
 <?php
 include 'config.php';
 include 'functions.php';
+require_once 'model/UserModel.php';
+
 
 rememberToken();
 isAuthenticated();
@@ -11,9 +13,8 @@ if (isset($_GET['id'])) {
 
     $user_id = base64_decode($encoded_id);
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
-    $stmt->execute([':id' => $user_id]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $userModel = new UserModel($pdo);
+    $user = $userModel->getUserById($user_id);
 
     if (!$user) {
         echo "User not found!";

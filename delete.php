@@ -1,6 +1,8 @@
 <?php
 require 'config.php';
 require 'functions.php';
+require_once 'model/UserModel.php';
+
 rememberToken();
 isAuthenticated();
 
@@ -14,9 +16,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $user_id = base64_decode($encoded_id);
 
         // Check if user exists
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
-        $stmt->execute([':id' => $user_id]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $userModel = new UserModel($pdo);
+        $user= $userModel->getUserById($user_id);
 
         if (!$user) {
             header("Location: dashboard.php?error= Không tìm thấy người dùng!");
@@ -29,8 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         // Delete the user
-        $deleteStmt = $pdo->prepare("DELETE FROM users WHERE id = :id");
-        if ($deleteStmt->execute([':id' => $user_id])) {
+        $userModel->deleteUser($user_id);
+        if ( $userModel->deleteUser($user_id)) {
             header("Location: dashboard.php?success=Xóa người dùng thành công!");
             exit;
         } else {

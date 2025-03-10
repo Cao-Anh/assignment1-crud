@@ -1,6 +1,7 @@
 <?php
 session_start();
 require 'config.php'; 
+require 'model/UserModel.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
@@ -8,9 +9,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $new_password = trim($_POST['new_password']);
     $confirm_password = trim($_POST['confirm_password']);
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :username");
-    $stmt->execute(['username' => $username]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $userModel = new UserModel($pdo);
+    $user= $userModel->getUserByUsername($username);
 
     if (!$user) {
         $_SESSION['error'] = "Tên đăng nhập không tồn tại!";
