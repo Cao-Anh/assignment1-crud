@@ -48,8 +48,6 @@ if (isset($_GET['success'])) {
     </header>
     <div class="container">
         <h1>Danh sách người dùng</h1>
-
-
         <table>
             <thead>
                 <tr>

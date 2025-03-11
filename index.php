@@ -25,16 +25,48 @@ if (isset($_SESSION['error'])) {
 //     echo "<script>alert('$message');</script>";
 // }
 
+//if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+//    $username = $_POST['username'];
+//    $password = $_POST['password'];
+//
+//
+//    $userModel = new UserModel($pdo);
+//    $user = $userModel->getUserByUsername($username);
+//    if ($user && password_verify($password, $user['password'])) {
+//
+//        $_SESSION['user'] = $user;
+//        if (isset($_POST['remember_token'])) {
+//            $token = bin2hex(random_bytes(32));
+//            setcookie('remember_token', $token, time() + (86400 * 30), "/");
+//
+//            $userModel->setRememberToken($token, $user);
+//        }
+//
+//        header("Location: dashboard.php");
+//        exit();
+//    } else {
+//        $error = "Tài khoản hoặc mật khẩu không đúng, vui lòng đăng nhập lại.";
+//    }
+//}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-
     $userModel = new UserModel($pdo);
     $user = $userModel->getUserByUsername($username);
-    if ($user && password_verify($password, $user['password'])) {
 
+    if (!$user) {
+        $error = "Tài khoản không tồn tại.";
+    } elseif (!password_verify($password, $user['password'])) {
+        echo "<script>
+            sessionStorage.setItem('savedUsername', '"
+            . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . "');
+        </script>";
+        $error = "Mật khẩu không đúng.";
+    } else {
         $_SESSION['user'] = $user;
+
         if (isset($_POST['remember_token'])) {
             $token = bin2hex(random_bytes(32));
             setcookie('remember_token', $token, time() + (86400 * 30), "/");
@@ -44,8 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         header("Location: dashboard.php");
         exit();
-    } else {
-        $error = "Tài khoản hoặc mật khẩu không đúng, vui lòng đăng nhập lại.";
     }
 }
 if (isset($_GET['error'])) {
@@ -83,7 +113,7 @@ if (isset($_GET['error'])) {
                 <?php endif; ?>
 
                 <label>Username:</label>
-                <input type="text" name="username" required>
+                <input type="text" name="username" id="username" required>
 
                 <label>Mật khẩu:</label>
                 <input type="password" name="password" required>
@@ -106,6 +136,14 @@ if (isset($_GET['error'])) {
     <footer>
         PHP Training @10/2023
     </footer>
+    <script>
+        window.onload = function () {
+            let savedUsername = sessionStorage.getItem("savedUsername");
+            if (savedUsername) {
+                document.getElementById("username").value = savedUsername;
+            }
+        };
+    </script>
 </body>
 
 </html>
