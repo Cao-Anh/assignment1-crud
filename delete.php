@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         // Delete the user
-        $userModel->deleteUser($user_id);
+        // $userModel->deleteUser($user_id);
         if ( $userModel->deleteUser($user_id)) {
             header("Location: dashboard.php?success=Xóa người dùng thành công!");
             exit;
