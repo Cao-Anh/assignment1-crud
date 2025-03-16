@@ -1,8 +1,8 @@
 <?php
 
-class UserModel
+class UserModel extends BaseModel
 {
-    private $pdo;
+
 
     public function __construct($pdo)
     {
