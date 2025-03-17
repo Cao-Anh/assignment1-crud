@@ -1,6 +1,8 @@
 <?php
 include 'config.php';
 include 'functions.php';
+require_once 'model/UserModel.php';
+
 
 rememberToken();
 isAuthenticated();
@@ -11,9 +13,8 @@ if (isset($_GET['id'])) {
 
     $user_id = base64_decode($encoded_id);
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
-    $stmt->execute([':id' => $user_id]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $userModel = new UserModel($pdo);
+    $user = $userModel->getUserById($user_id);
 
     if (!$user) {
         echo "User not found!";
@@ -54,19 +55,19 @@ if (isset($_GET['success'])) {
         <table>
             <tr>
                 <th>Username:</th>
-                <td><?= htmlspecialchars($user['username']) ?></td>
+                <td><?= htmlspecialchars($user->getter('username')) ?></td>
             </tr>
             <tr>
                 <th>Email:</th>
-                <td><?= htmlspecialchars($user['email']) ?></td>
+                <td><?= htmlspecialchars($user->getter('email')) ?></td>
             </tr>
             <tr>
                 <th>Mô tả:</th>
-                <td><?= htmlspecialchars($user['description']??"") ?></td>
+                <td><?= htmlspecialchars($user->getter('description')??'') ?></td>
             </tr>
         </table>
         <?php if (isAuthorized($user)): ?>
-            <a href="edit.php?id=<?= base64_encode($user['id']) ?>">Chỉnh sửa</a>
+            <a href="edit.php?id=<?= base64_encode($user->getter('id')) ?>">Chỉnh sửa</a>
         <?php endif; ?>
 
     </div>

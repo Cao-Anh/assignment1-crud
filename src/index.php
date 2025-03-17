@@ -4,6 +4,8 @@
 // session_start();
 require 'config.php';
 require 'functions.php';
+require_once 'model/UserModel.php';
+
 rememberToken();
 if (isset($_SESSION['user'])) {
     header("Location: dashboard.php");
@@ -19,33 +21,38 @@ if (isset($_SESSION['error'])) {
     unset($_SESSION['error']);
 }
 
-// if (isset($_GET['success'])) {
-//     $message = $_GET['success'];
-//     echo "<script>alert('$message');</script>";
-// }
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-    $stmt->execute([$username]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($user && password_verify($password, $user['password'])) {
+    $userModel = new UserModel($pdo);
+    $user = $userModel->getUserByUsername($username);
 
-        $_SESSION['user'] = $user;
+    if (!$user) {
+        $error = "Tài khoản không tồn tại.";
+    } elseif (!password_verify($password, $user->getter('password'))) {
+        echo "<script>
+            sessionStorage.setItem('savedUsername', '"
+            . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . "');
+        </script>";
+        $error = "Mật khẩu không đúng.";
+    } else {
+        $_SESSION['user'] = [
+            'id'       => $user->getter('id'),
+            'role'     => $user->getter('role'),
+            'username' => $user->getter('username'),
+            'email'    => $user->getter('email')
+        ];
+
         if (isset($_POST['remember_token'])) {
             $token = bin2hex(random_bytes(32));
             setcookie('remember_token', $token, time() + (86400 * 30), "/");
 
-            $stmt = $pdo->prepare("UPDATE users SET remember_token = :token WHERE id = :id");
-            $stmt->execute(['token' => $token, 'id' => $user['id']]);
+            $userModel->setRememberToken($token, $user);
         }
 
         header("Location: dashboard.php");
         exit();
-    } else {
-        $error="Tài khoản hoặc mật khẩu không đúng, vui lòng đăng nhập lại.";
     }
 }
 if (isset($_GET['error'])) {
@@ -83,7 +90,7 @@ if (isset($_GET['error'])) {
                 <?php endif; ?>
 
                 <label>Username:</label>
-                <input type="text" name="username" required>
+                <input type="text" name="username" id="username" required>
 
                 <label>Mật khẩu:</label>
                 <input type="password" name="password" required>
@@ -106,6 +113,14 @@ if (isset($_GET['error'])) {
     <footer>
         PHP Training @10/2023
     </footer>
+    <script>
+        window.onload = function () {
+            let savedUsername = sessionStorage.getItem("savedUsername");
+            if (savedUsername) {
+                document.getElementById("username").value = savedUsername;
+            }
+        };
+    </script>
 </body>
 
 </html>

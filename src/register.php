@@ -1,5 +1,7 @@
 <?php
 include 'config.php';
+require_once 'model/UserModel.php';
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
@@ -10,9 +12,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
     // Validate unique username
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username");
-    $stmt->execute([':username' => $username]);
-    if ($stmt->fetch()) {
+    $userModel = new UserModel($pdo);
+    $isUsernameExist= $userModel->getUserByUsername($username);
+
+    if ($isUsernameExist) {
         $_SESSION['error']= 'Tên đăng nhập đã tồn tại, vui lòng chọn tên khác!';
         header("Location: register.php");
         exit;
@@ -21,9 +24,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
     // Validate unique email
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email");
-    $stmt->execute([':email' => $email]);
-    if ($stmt->fetch()) {
+    $isEmailExist= $userModel->getUserByEmail($email);   
+
+    if ($isEmailExist) {
         $_SESSION['error']= 'Email đã tồn tại, vui lòng nhập email khác!';
         header("Location: register.php");
         exit;
@@ -33,13 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
     // Insert user into database
-    $stmt = $pdo->prepare("INSERT INTO users (username, password, email, description, role) VALUES (:username, :password, :email, NULL,  'member')");
-    $stmt->execute([
-        ':username' => $username,
-        ':password' => $hashed_password,
-        ':email' => $email,
-
-    ]);
+    $userModel->createUser($username, $hashed_password, $email);
     $_SESSION['success']= 'Đăng ký thành công!';
     header("Location: index.php");
     exit;

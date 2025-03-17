@@ -1,33 +1,31 @@
 <?php
 session_start();
-require 'config.php';
-require 'functions.php';
-// print_r($_SESSION['user']);
+require_once 'config.php';
+require_once 'functions.php';
+require_once 'model/UserModel.php';
+
 rememberToken();
 isAuthenticated();
-// if (!isset($_SESSION['user'])) {
-//     header("Location: index.php");
-//     exit();
-// }
-
 
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 10;
 $offset = ($page - 1) * $limit;
 
-$stmt = $pdo->prepare("SELECT * FROM users ORDER BY username ASC LIMIT ? OFFSET ?");
-$stmt->execute([$limit, $offset]);
-$users = $stmt->fetchAll();
-
-$totalUsers = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+$userModel = new UserModel($pdo);
+$users = $userModel->getUsers($limit, $offset);
+$totalUsers = $userModel->getTotalUsers();
 $totalPages = ceil($totalUsers / $limit);
-if (isset($_GET['success'])) {
-    echo "<script>alert('" . htmlspecialchars($_GET['success']) . "');</script>";
-}
 
 if (isset($_GET['error'])) {
     echo "<script>alert('" . htmlspecialchars($_GET['error']) . "');</script>";
+    unset($_GET['error']);
 }
+if (isset($_GET['success'])) {
+    echo "<script>alert('" . htmlspecialchars($_GET['success']) . "');</script>";
+    unset($_GET['success']);
+}
+
+
 
 ?>
 <!DOCTYPE html>
@@ -49,8 +47,6 @@ if (isset($_GET['error'])) {
     </header>
     <div class="container">
         <h1>Danh sách người dùng</h1>
-
-
         <table>
             <thead>
                 <tr>
@@ -63,11 +59,12 @@ if (isset($_GET['error'])) {
             <tbody>
                 <?php foreach ($users as $user): ?>
                     <tr>
-                        <td><?= htmlspecialchars($user['username']) ?></td>
-                        <td><?= htmlspecialchars($user['email']) ?></td>
-                        <td><?= htmlspecialchars($user['description']??"") ?></td>
+                        <td><?= htmlspecialchars($user->getter('username')) ?></td>
+                        <td><?= htmlspecialchars($user->getter('email')) ?></td>
+                        <td><?= htmlspecialchars($user->getter('description')??'') ?></td>
+
                         <td>
-                            <?php $encoded_id = base64_encode($user['id']); ?>
+                            <?php $encoded_id = base64_encode($user->getter('id')); ?>
                             <a href="show.php?id=<?= $encoded_id ?>">Xem</a>
                             <?php if (isAuthorized($user)): ?>
                                 <a href="edit.php?id=<?= $encoded_id ?>">Sửa</a>

@@ -1,0 +1,4 @@
+# session time expiration (in second)
+#php_value session.gc_maxlifetime 10
+#php_value session.cookie_lifetime 10
+#php_value session.save_path "/tmp"

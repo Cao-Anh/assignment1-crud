@@ -2,6 +2,8 @@
 session_start();
 include 'config.php';
 require 'functions.php';
+require_once 'model/UserModel.php';
+
 
 rememberToken();
 isAuthenticated();
@@ -20,9 +22,8 @@ if (isset($_GET['id'])) {
         die("Invalid request1!");
     }
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id");
-    $stmt->execute([':id' => $user_id]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $userModel = new UserModel($pdo);
+    $user = $userModel->getUserById($user_id);
 
     if (!$user) {
         echo "User not found!";
@@ -48,40 +49,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
     $username = trim($_POST['username']);
-    $password = $_POST['password'];
+    // $password = $_POST['password'];
     $email = trim($_POST['email']);
     $description = trim($_POST['description']);
 
     // Validate unique username
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username");
-    $stmt->execute([':username' => $username]);
-    if ($stmt->fetch() && $user['username'] != $username) {
+    $isUsernameExist= $userModel->getUserByUsername($username);
+    if ($isUsernameExist && $user->getter('username') != $username) {
         header("Location: edit.php?id=" . $encoded_id . "&errorUsername=Tên đăng nhập đã tồn tại!");
         exit;
     }
 
     // Validate unique email
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email");
-    $stmt->execute([':email' => $email]);
-    if ($stmt->fetch() && $user['email'] != $email) {
+    $isEmailExist= $userModel->getUserByEmail($email);   
+    if ($isEmailExist && $user->getter('email') != $email) {
         header("Location: edit.php?id=" . $encoded_id . "&errorEmail=Email đã tồn tại!");
         exit;
     }
 
-    // Verify password
-    if (!password_verify($password, $user['password'])) {
-        header("Location: edit.php?id=" . $encoded_id . "&errorPassword=Mật khẩu hiện tại không đúng!");
-        exit;
-    }
-
+    
     // Update user info
-    $stmt = $pdo->prepare("UPDATE users SET username = :username, email = :email, description = :description WHERE id = :id");
-    $stmt->execute([
-        ':username' => $username,
-        ':email' => $email,
-        ':description' => $description,
-        ':id' => $user_id
-    ]);
+    $userModel->updateUser($username, $email, $description, $user_id);
 
     // Update session if editing self
     if ($_SESSION['user']['id'] == $user_id) {
@@ -119,29 +107,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <h2>Chỉnh sửa thông tin</h2>
         <?php if (!empty($_GET['errorUsername'])) echo "<p class='error'>" . htmlspecialchars($_GET['errorUsername']) . "</p>"; ?>
         <?php if (!empty($_GET['errorEmail'])) echo "<p class='error'>" . htmlspecialchars($_GET['errorEmail']) . "</p>"; ?>
-        <?php if (!empty($_GET['errorPassword'])) echo "<p class='error'>" . htmlspecialchars($_GET['errorPassword']) . "</p>"; ?>
 
-        <form method="POST" action="edit.php?id=<?= $encoded_id ?>">
+        <form method="POST" action="edit.php?id=<?= $encoded_id ?>" >
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
             <label>Username</label>
-            <input type="text" name="username" id="username" value="<?= htmlspecialchars($user['username']) ?>" required>
+            <input type="text" name="username" id="username" value="<?= htmlspecialchars($user->getter('username')) ?>" required>
             <p class="error" id="usernameError"></p>
 
-            <label>Mật khẩu</label>
-            <input type="password" name="password" id="password" required>
-            <p class="error" id="passwordError"></p>
-
-            <label>Nhập lại mật khẩu</label>
-            <input type="password" name="confirm_password" id="confirm_password" required>
-            <p class="error" id="confirmPasswordError"></p>
-
             <label>Email</label>
-            <input type="email" name="email" id="email" value="<?= htmlspecialchars($user['email']) ?>" required>
+            <input type="email" name="email" id="email" value="<?= htmlspecialchars($user->getter('email')) ?>" required>
             <p class="error" id="emailError"></p>
 
             <label>Mô tả (tùy chọn)</label>
-            <textarea name="description" id="description"><?= htmlspecialchars($user['description'] ?? '') ?></textarea>
+            <textarea name="description" id="description"><?= htmlspecialchars($user->getter('description') ?? '') ?></textarea>
 
             <div class="button-container" style="margin-top: 10px;">
                 <button onclick="window.history.back();">Quay lại</button>
