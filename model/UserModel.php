@@ -1,13 +1,10 @@
 <?php
-
-class UserModel
+require_once 'BaseModel.php';
+class UserModel extends BaseModel
 {
-    private $pdo;
+    
 
-    public function __construct($pdo)
-    {
-        $this->pdo = $pdo;
-    }
+    
 
     public function getUsers($limit, $offset)
     {

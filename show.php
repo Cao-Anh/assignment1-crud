@@ -63,7 +63,7 @@ if (isset($_GET['success'])) {
             </tr>
             <tr>
                 <th>Mô tả:</th>
-                <td><?= htmlspecialchars($user['description']) ?></td>
+                <td><?= htmlspecialchars($user['description']??'') ?></td>
             </tr>
         </table>
         <?php if (isAuthorized($user)): ?>
