@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 abstract class BaseModel
 {
     protected $pdo;
@@ -16,7 +16,7 @@ abstract class BaseModel
      * @param array $params Parameters to bind in the query.
      * @return PDOStatement|false The result set or false on failure.
      */
-    protected function query($sql, $params = [])
+    protected function query($sql, $params = []):bool
     {
         try {
             $stmt = $this->pdo->prepare($sql);
@@ -35,7 +35,7 @@ abstract class BaseModel
      * @param array $params Query parameters.
      * @return array Result set.
      */
-    protected function select($sql, $params = [])
+    protected function select($sql, $params = []):array
     {
         $stmt = $this->query($sql, $params);
         return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
@@ -48,7 +48,7 @@ abstract class BaseModel
      * @param array $params Query parameters.
      * @return array|false A single record or false if not found.
      */
-    protected function selectOne($sql, $params = [])
+    protected function selectOne($sql, $params = []):array
     {
         $stmt = $this->query($sql, $params);
         return $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
@@ -61,7 +61,7 @@ abstract class BaseModel
      * @param array $params Query parameters.
      * @return int|false The last inserted ID or false on failure.
      */
-    protected function insert($sql, $params = [])
+    protected function insert($sql, $params = []):array
     {
         $stmt = $this->query($sql, $params);
         return $stmt ? $this->pdo->lastInsertId() : false;
@@ -74,7 +74,7 @@ abstract class BaseModel
      * @param array $params Query parameters.
      * @return bool True on success, false on failure.
      */
-    protected function update($sql, $params = [])
+    protected function update($sql, $params = []):bool
     {
         $stmt = $this->query($sql, $params);
         return $stmt ? $stmt->rowCount() > 0 : false;
@@ -87,7 +87,7 @@ abstract class BaseModel
      * @param array $params Query parameters.
      * @return bool True on success, false on failure.
      */
-    protected function delete($sql, $params = [])
+    protected function delete($sql, $params = []):bool
     {
         $stmt = $this->query($sql, $params);
         return $stmt ? $stmt->rowCount() > 0 : false;
