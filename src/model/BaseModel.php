@@ -21,13 +21,13 @@ abstract class BaseModel
         }
     }
 
-    protected function select($sql, $params = []): array
+    protected function select($sql, $params = [])
     {
         $stmt = $this->query($sql, $params);
-        return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : false;
     }
 
-    protected function selectOne($sql, $params = []): array
+    protected function selectOne($sql, $params = [])
     {
         $stmt = $this->query($sql, $params);
         return $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
