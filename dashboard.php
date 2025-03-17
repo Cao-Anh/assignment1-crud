@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 require_once 'config.php';
 require_once 'functions.php';
@@ -60,11 +59,12 @@ if (isset($_GET['success'])) {
             <tbody>
                 <?php foreach ($users as $user): ?>
                     <tr>
-                        <td><?= htmlspecialchars($user['username']) ?></td>
-                        <td><?= htmlspecialchars($user['email']) ?></td>
-                        <td><?= htmlspecialchars($user['description'] ?? '')?></td>
+                        <td><?= htmlspecialchars($user->getter('username')) ?></td>
+                        <td><?= htmlspecialchars($user->getter('email')) ?></td>
+                        <td><?= htmlspecialchars($user->getter('description')??'') ?></td>
+
                         <td>
-                            <?php $encoded_id = base64_encode($user['id']); ?>
+                            <?php $encoded_id = base64_encode($user->getter('id')); ?>
                             <a href="show.php?id=<?= $encoded_id ?>">Xem</a>
                             <?php if (isAuthorized($user)): ?>
                                 <a href="edit.php?id=<?= $encoded_id ?>">Sửa</a>

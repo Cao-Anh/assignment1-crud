@@ -49,20 +49,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
     $username = trim($_POST['username']);
-    $password = $_POST['password'];
+    // $password = $_POST['password'];
     $email = trim($_POST['email']);
     $description = trim($_POST['description']);
 
     // Validate unique username
     $isUsernameExist= $userModel->getUserByUsername($username);
-    if ($isUsernameExist && $user['username'] != $username) {
+    if ($isUsernameExist && $user->getter('username') != $username) {
         header("Location: edit.php?id=" . $encoded_id . "&errorUsername=Tên đăng nhập đã tồn tại!");
         exit;
     }
 
     // Validate unique email
     $isEmailExist= $userModel->getUserByEmail($email);   
-    if ($isEmailExist && $user['email'] != $email) {
+    if ($isEmailExist && $user->getter('email') != $email) {
         header("Location: edit.php?id=" . $encoded_id . "&errorEmail=Email đã tồn tại!");
         exit;
     }
@@ -112,15 +112,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
             <label>Username</label>
-            <input type="text" name="username" id="username" value="<?= htmlspecialchars($user['username']) ?>" required>
+            <input type="text" name="username" id="username" value="<?= htmlspecialchars($user->getter('username')) ?>" required>
             <p class="error" id="usernameError"></p>
 
             <label>Email</label>
-            <input type="email" name="email" id="email" value="<?= htmlspecialchars($user['email']) ?>" required>
+            <input type="email" name="email" id="email" value="<?= htmlspecialchars($user->getter('email')) ?>" required>
             <p class="error" id="emailError"></p>
 
             <label>Mô tả (tùy chọn)</label>
-            <textarea name="description" id="description"><?= htmlspecialchars($user['description'] ?? '') ?></textarea>
+            <textarea name="description" id="description"><?= htmlspecialchars($user->getter('description') ?? '') ?></textarea>
 
             <div class="button-container" style="margin-top: 10px;">
                 <button onclick="window.history.back();">Quay lại</button>

@@ -7,7 +7,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
 function isAuthorized($user)
 {
-    return $_SESSION['user']['role'] === 'admin' || $_SESSION['user']['id'] == $user['id'];
+    return $_SESSION['user']['role'] === 'admin' || 
+           $_SESSION['user']['id'] == $user->getter('id');
 }
 function isAuthenticated(): void
 {

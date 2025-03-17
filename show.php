@@ -55,19 +55,19 @@ if (isset($_GET['success'])) {
         <table>
             <tr>
                 <th>Username:</th>
-                <td><?= htmlspecialchars($user['username']) ?></td>
+                <td><?= htmlspecialchars($user->getter('username')) ?></td>
             </tr>
             <tr>
                 <th>Email:</th>
-                <td><?= htmlspecialchars($user['email']) ?></td>
+                <td><?= htmlspecialchars($user->getter('email')) ?></td>
             </tr>
             <tr>
                 <th>Mô tả:</th>
-                <td><?= htmlspecialchars($user['description']??'') ?></td>
+                <td><?= htmlspecialchars($user->getter('description')??'') ?></td>
             </tr>
         </table>
         <?php if (isAuthorized($user)): ?>
-            <a href="edit.php?id=<?= base64_encode($user['id']) ?>">Chỉnh sửa</a>
+            <a href="edit.php?id=<?= base64_encode($user->getter('id')) ?>">Chỉnh sửa</a>
         <?php endif; ?>
 
     </div>

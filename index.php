@@ -5,6 +5,7 @@
 require 'config.php';
 require 'functions.php';
 require_once 'model/UserModel.php';
+
 rememberToken();
 if (isset($_SESSION['user'])) {
     header("Location: dashboard.php");
@@ -20,35 +21,6 @@ if (isset($_SESSION['error'])) {
     unset($_SESSION['error']);
 }
 
-// if (isset($_GET['success'])) {
-//     $message = $_GET['success'];
-//     echo "<script>alert('$message');</script>";
-// }
-
-//if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-//    $username = $_POST['username'];
-//    $password = $_POST['password'];
-//
-//
-//    $userModel = new UserModel($pdo);
-//    $user = $userModel->getUserByUsername($username);
-//    if ($user && password_verify($password, $user['password'])) {
-//
-//        $_SESSION['user'] = $user;
-//        if (isset($_POST['remember_token'])) {
-//            $token = bin2hex(random_bytes(32));
-//            setcookie('remember_token', $token, time() + (86400 * 30), "/");
-//
-//            $userModel->setRememberToken($token, $user);
-//        }
-//
-//        header("Location: dashboard.php");
-//        exit();
-//    } else {
-//        $error = "Tài khoản hoặc mật khẩu không đúng, vui lòng đăng nhập lại.";
-//    }
-//}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -58,14 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$user) {
         $error = "Tài khoản không tồn tại.";
-    } elseif (!password_verify($password, $user['password'])) {
+    } elseif (!password_verify($password, $user->getter('password'))) {
         echo "<script>
             sessionStorage.setItem('savedUsername', '"
             . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . "');
         </script>";
         $error = "Mật khẩu không đúng.";
     } else {
-        $_SESSION['user'] = $user;
+        $_SESSION['user'] = [
+            'id'       => $user->getter('id'),
+            'role'     => $user->getter('role'),
+            'username' => $user->getter('username'),
+            'email'    => $user->getter('email')
+        ];
 
         if (isset($_POST['remember_token'])) {
             $token = bin2hex(random_bytes(32));

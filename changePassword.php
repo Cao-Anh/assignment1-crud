@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    if (!password_verify($current_password, $user['password'])) {
+    if (!password_verify($current_password, $user->getter('password'))) {
         $_SESSION['error'] = "Mật khẩu hiện tại không đúng!";
         header("Location: changePassword.php");
         exit();
